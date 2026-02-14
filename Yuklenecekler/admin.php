@@ -1,5 +1,54 @@
 <?php
+session_start();
 require_once 'db.php';
+
+// Basit Şifre Koruması
+$ADMIN_SIFRE = "1234"; // BURAYI DEĞİŞTİRİN!
+
+// Çıkış Yap
+if (isset($_GET['cikis'])) {
+    session_destroy();
+    header("Location: admin.php");
+    exit;
+}
+
+// Giriş Yap
+if (isset($_POST['giris'])) {
+    if ($_POST['sifre'] === $ADMIN_SIFRE) {
+        $_SESSION['admin_logged_in'] = true;
+    } else {
+        $login_error = "Hatalı şifre!";
+    }
+}
+
+// Oturum Kontrolü
+if (!isset($_SESSION['admin_logged_in'])) {
+?>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Giriş</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { font-family: sans-serif; background-color: #f1f5f9; }</style>
+</head>
+<body class="flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+        <h2 class="text-2xl font-bold mb-6 text-center text-slate-800">Admin Girişi</h2>
+        <?php if(isset($login_error)) echo "<p class='text-red-500 text-sm mb-4 text-center'>$login_error</p>"; ?>
+        <form method="POST">
+            <input type="password" name="sifre" placeholder="Şifre" class="w-full px-4 py-2 border rounded-lg mb-4 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <button type="submit" name="giris" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">Giriş Yap</button>
+        </form>
+        <p class="text-center mt-4"><a href="index.php" class="text-slate-500 text-sm hover:underline">Siteye Dön</a></p>
+    </div>
+</body>
+</html>
+<?php
+    exit;
+}
+
+// --- BURADAN AŞAĞISI GİRİŞ YAPILMIŞ ALAN ---
 
 // İşlemler (POST)
 $mesaj = '';
@@ -61,17 +110,21 @@ $aktifTab = isset($_GET['tab']) ? $_GET['tab'] : 'kisisel';
     <div class="sticky top-0 z-50 bg-slate-900 text-white px-6 py-4 shadow-md flex justify-between items-center">
         <div>
             <h2 class="text-xl font-bold">Admin Panel</h2>
-            <p class="text-slate-400 text-xs">CV Düzenleme Modu</p>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <p class="text-slate-400 text-xs">Aktif Oturum</p>
+            </div>
         </div>
         <div class="flex gap-3">
-            <a href="index.php" class="px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition-colors">Siteyi Görüntüle</a>
+            <a href="index.php" class="px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition-colors" target="_blank">Siteyi Görüntüle</a>
+            <a href="?cikis=1" class="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700 transition-colors">Çıkış</a>
         </div>
     </div>
 
     <div class="max-w-4xl mx-auto mt-8 px-4">
         
         <?php if($mesaj): ?>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4"><?php echo $mesaj; ?></div>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 shadow-sm"><?php echo $mesaj; ?></div>
         <?php endif; ?>
 
         <!-- Tab Menü -->
@@ -128,7 +181,7 @@ $aktifTab = isset($_GET['tab']) ? $_GET['tab'] : 'kisisel';
                     <h4 class="font-bold text-slate-800"><?php echo htmlspecialchars($skill['yetenek_adi']); ?> <span class="text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded ml-2">Seviye: <?php echo $skill['seviye']; ?></span></h4>
                     <p class="text-sm text-slate-500"><?php echo htmlspecialchars($skill['aciklama']); ?></p>
                 </div>
-                <a href="?sil_yetenek=<?php echo $skill['id']; ?>" onclick="return confirm('Silinsin mi?')" class="text-red-400 hover:text-red-600 p-2">
+                <a href="?sil_yetenek=<?php echo $skill['id']; ?>" onclick="return confirm('Bu yeteneği silmek istediğinize emin misiniz?')" class="text-red-400 hover:text-red-600 p-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </a>
             </div>
@@ -138,10 +191,10 @@ $aktifTab = isset($_GET['tab']) ? $_GET['tab'] : 'kisisel';
             <form method="POST" class="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
                 <h3 class="font-bold text-slate-700 mb-4">Yeni Yetenek Ekle</h3>
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" name="yetenek_adi" placeholder="Yetenek Adı" required class="w-full px-3 py-2 rounded border border-slate-300">
-                    <input type="number" name="seviye" min="1" max="5" placeholder="Seviye (1-5)" required class="w-full px-3 py-2 rounded border border-slate-300">
+                    <input type="text" name="yetenek_adi" placeholder="Yetenek Adı" required class="w-full px-3 py-2 rounded border border-slate-300 focus:border-indigo-500 focus:outline-none">
+                    <input type="number" name="seviye" min="1" max="5" placeholder="Seviye (1-5)" required class="w-full px-3 py-2 rounded border border-slate-300 focus:border-indigo-500 focus:outline-none">
                 </div>
-                <input type="text" name="aciklama" placeholder="Kısa Açıklama" required class="w-full px-3 py-2 rounded border border-slate-300 mb-4">
+                <input type="text" name="aciklama" placeholder="Kısa Açıklama" required class="w-full px-3 py-2 rounded border border-slate-300 mb-4 focus:border-indigo-500 focus:outline-none">
                 <button type="submit" name="ekle_yetenek" class="w-full bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-700">Ekle</button>
             </form>
         </div>
@@ -158,7 +211,7 @@ $aktifTab = isset($_GET['tab']) ? $_GET['tab'] : 'kisisel';
                     <div class="text-sm text-slate-500 mb-1"><?php echo htmlspecialchars($exp['sirket']); ?> | <?php echo htmlspecialchars($exp['tarih']); ?></div>
                     <p class="text-xs text-slate-400"><?php echo htmlspecialchars($exp['aciklama']); ?></p>
                 </div>
-                <a href="?sil_deneyim=<?php echo $exp['id']; ?>" onclick="return confirm('Silinsin mi?')" class="text-red-400 hover:text-red-600 p-2">
+                <a href="?sil_deneyim=<?php echo $exp['id']; ?>" onclick="return confirm('Bu deneyimi silmek istediğinize emin misiniz?')" class="text-red-400 hover:text-red-600 p-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </a>
             </div>
@@ -168,13 +221,13 @@ $aktifTab = isset($_GET['tab']) ? $_GET['tab'] : 'kisisel';
             <form method="POST" class="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
                 <h3 class="font-bold text-slate-700 mb-4">Yeni Deneyim Ekle</h3>
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" name="pozisyon" placeholder="Pozisyon / Ünvan" required class="w-full px-3 py-2 rounded border border-slate-300">
-                    <input type="text" name="sirket" placeholder="Şirket Adı" required class="w-full px-3 py-2 rounded border border-slate-300">
+                    <input type="text" name="pozisyon" placeholder="Pozisyon / Ünvan" required class="w-full px-3 py-2 rounded border border-slate-300 focus:border-indigo-500 focus:outline-none">
+                    <input type="text" name="sirket" placeholder="Şirket Adı" required class="w-full px-3 py-2 rounded border border-slate-300 focus:border-indigo-500 focus:outline-none">
                     <div class="md:col-span-2">
-                        <input type="text" name="tarih" placeholder="Tarih Aralığı (Örn: 2020 - 2023)" required class="w-full px-3 py-2 rounded border border-slate-300">
+                        <input type="text" name="tarih" placeholder="Tarih Aralığı (Örn: 2020 - 2023)" required class="w-full px-3 py-2 rounded border border-slate-300 focus:border-indigo-500 focus:outline-none">
                     </div>
                 </div>
-                <textarea name="aciklama" rows="3" placeholder="İş tanımı..." required class="w-full px-3 py-2 rounded border border-slate-300 mb-4"></textarea>
+                <textarea name="aciklama" rows="3" placeholder="İş tanımı..." required class="w-full px-3 py-2 rounded border border-slate-300 mb-4 focus:border-indigo-500 focus:outline-none"></textarea>
                 <button type="submit" name="ekle_deneyim" class="w-full bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-700">Ekle</button>
             </form>
         </div>

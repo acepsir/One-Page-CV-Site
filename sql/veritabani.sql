@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS deneyimler (
     aciklama TEXT
 );
 
--- Örnek Veriler (Kurulum sonrası boş kalmasın diye)
+-- Örnek Veriler
 INSERT INTO kisisel_bilgiler (id, ad_soyad, unvan, email, telefon, adres, hakkinda, foto_url) VALUES
 (1, 'Ahmet Yılmaz', 'Kıdemli Full Stack Geliştirici', 'ahmet@ornek.com', '+90 555 123 45 67', 'İstanbul, Türkiye', 'Yenilikçi ve çözüm odaklı yazılım geliştiricisi. 5 yıldan fazla süredir web teknolojileri üzerine çalışıyorum.', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=500&h=500&q=80')
 ON DUPLICATE KEY UPDATE id=1;

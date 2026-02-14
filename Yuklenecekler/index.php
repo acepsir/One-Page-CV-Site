@@ -2,9 +2,13 @@
 require_once 'db.php';
 
 // Verileri Çek
-$kisisel = $db->query("SELECT * FROM kisisel_bilgiler WHERE id = 1")->fetch();
-$yetenekler = $db->query("SELECT * FROM yetenekler ORDER BY id ASC")->fetchAll();
-$deneyimler = $db->query("SELECT * FROM deneyimler ORDER BY id DESC")->fetchAll();
+try {
+    $kisisel = $db->query("SELECT * FROM kisisel_bilgiler WHERE id = 1")->fetch();
+    $yetenekler = $db->query("SELECT * FROM yetenekler ORDER BY id ASC")->fetchAll();
+    $deneyimler = $db->query("SELECT * FROM deneyimler ORDER BY id DESC")->fetchAll();
+} catch (PDOException $e) {
+    die("Veri çekme hatası. Lütfen veritabanı ayarlarını kontrol edin.");
+}
 
 // Yıldız Helper Fonksiyonu
 function yildizGoster($seviye) {
@@ -94,19 +98,23 @@ function yildizGoster($seviye) {
                 </div>
 
                 <div class="space-y-8 border-l-2 border-indigo-100 pl-8 ml-3 relative">
-                    <?php foreach($deneyimler as $exp): ?>
-                    <div class="relative">
-                        <span class="absolute -left-[39px] top-1 w-5 h-5 rounded-full border-4 border-white bg-indigo-500"></span>
-                        <h3 class="text-lg font-bold text-slate-800"><?php echo htmlspecialchars($exp['pozisyon']); ?></h3>
-                        <div class="flex justify-between items-center text-sm text-slate-500 mb-2 font-medium">
-                            <span><?php echo htmlspecialchars($exp['sirket']); ?></span>
-                            <span class="bg-slate-100 px-2 py-0.5 rounded text-xs"><?php echo htmlspecialchars($exp['tarih']); ?></span>
+                    <?php if (count($deneyimler) > 0): ?>
+                        <?php foreach($deneyimler as $exp): ?>
+                        <div class="relative">
+                            <span class="absolute -left-[39px] top-1 w-5 h-5 rounded-full border-4 border-white bg-indigo-500"></span>
+                            <h3 class="text-lg font-bold text-slate-800"><?php echo htmlspecialchars($exp['pozisyon']); ?></h3>
+                            <div class="flex justify-between items-center text-sm text-slate-500 mb-2 font-medium">
+                                <span><?php echo htmlspecialchars($exp['sirket']); ?></span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded text-xs"><?php echo htmlspecialchars($exp['tarih']); ?></span>
+                            </div>
+                            <p class="text-slate-600 text-sm leading-relaxed">
+                                <?php echo nl2br(htmlspecialchars($exp['aciklama'])); ?>
+                            </p>
                         </div>
-                        <p class="text-slate-600 text-sm leading-relaxed">
-                            <?php echo nl2br(htmlspecialchars($exp['aciklama'])); ?>
-                        </p>
-                    </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-slate-500 italic">Henüz deneyim eklenmemiş.</p>
+                    <?php endif; ?>
                 </div>
             </section>
 
@@ -120,24 +128,28 @@ function yildizGoster($seviye) {
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
-                    <?php foreach($yetenekler as $skill): ?>
-                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold text-slate-800"><?php echo htmlspecialchars($skill['yetenek_adi']); ?></h4>
-                            <?php echo yildizGoster($skill['seviye']); ?>
+                    <?php if (count($yetenekler) > 0): ?>
+                        <?php foreach($yetenekler as $skill): ?>
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-800"><?php echo htmlspecialchars($skill['yetenek_adi']); ?></h4>
+                                <?php echo yildizGoster($skill['seviye']); ?>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                <?php echo htmlspecialchars($skill['aciklama']); ?>
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-600">
-                            <?php echo htmlspecialchars($skill['aciklama']); ?>
-                        </p>
-                    </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                         <p class="text-slate-500 italic">Henüz yetenek eklenmemiş.</p>
+                    <?php endif; ?>
                 </div>
             </section>
         </main>
         
-        <!-- Admin Butonu -->
-        <a href="admin.php" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-xl hover:bg-indigo-700 hover:scale-105 transition-all z-40" title="Yönetim Paneli">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <!-- Admin Giriş Linki (Sadece ikon) -->
+        <a href="admin.php" class="fixed bottom-6 right-6 bg-slate-800 text-white p-3 rounded-full shadow-lg hover:bg-slate-700 transition-all opacity-50 hover:opacity-100 z-50">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </a>
     </div>
 </body>
